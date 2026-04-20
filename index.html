@@ -14,32 +14,35 @@
             font-size: 1.5rem;
         }
 
-        /* 主題顏色變數 */
+        /* 主題顏色變數 - 優化對比度 (不變) */
         :root {
+            /* 黑色主題 */
             --bg-top-black: #111111;
             --bg-bottom-black: #000000;
             --text-color-black: #ffffff;
-            --border-color-black: #555555;
+            --high-contrast-border-black: #ffffff; /* 黑色背景用白色邊框 */
             --btn-color-black: #222222;
 
+            /* 白色主題 */
             --bg-top-white: #f5f5f5;
             --bg-bottom-white: #ffffff;
             --text-color-white: #000000;
-            --border-color-white: #cccccc;
+            --high-contrast-border-white: #000000; /* 白色背景用黑色邊框 */
             --btn-color-white: #eeeeee;
 
+            /* 黃色主題 */
             --bg-top-yellow: #e6e600;
             --bg-bottom-yellow: #ffff00;
             --text-color-yellow: #000000;
-            --border-color-yellow: #aaaa00;
+            --high-contrast-border-yellow: #000000; /* 黃色背景用黑色邊框 */
             --btn-color-yellow: #f0f000;
         }
 
         body {
             display: flex;
             flex-direction: column;
-            align-items: center;
             height: 100vh;
+            height: 100dvh; /* 動態視窗高度 */
             width: 100vw;
             overflow: hidden; 
             touch-action: none; 
@@ -49,6 +52,7 @@
             overscroll-behavior: none; 
         }
 
+        /* 應用主題背景色和文字顏色 */
         body.theme-black { background-color: var(--bg-bottom-black); color: var(--text-color-black); }
         body.theme-white { background-color: var(--bg-bottom-white); color: var(--text-color-white); }
         body.theme-yellow { background-color: var(--bg-bottom-yellow); color: var(--text-color-yellow); }
@@ -67,117 +71,137 @@
             cursor: pointer;
         }
 
+        /* 設定區域 */
         .settings {
             width: 100%;
-            padding: 15px;
+            padding: 10px 15px;
             display: flex;
             justify-content: space-around;
-            position: absolute;
-            top: 0;
+            flex: 0 0 auto; 
             z-index: 10;
         }
-        .theme-black .settings { background-color: var(--bg-top-black); border-bottom: 2px solid var(--border-color-black);}
-        .theme-white .settings { background-color: var(--bg-top-white); border-bottom: 2px solid var(--border-color-white);}
-        .theme-yellow .settings { background-color: var(--bg-top-yellow); border-bottom: 2px solid var(--border-color-yellow);}
+        /* 設定區域邊框也使用高對比度顏色，強化分區 */
+        .theme-black .settings { background-color: var(--bg-top-black); border-bottom: 4px solid var(--high-contrast-border-black);}
+        .theme-white .settings { background-color: var(--bg-top-white); border-bottom: 4px solid var(--high-contrast-border-white);}
+        .theme-yellow .settings { background-color: var(--bg-top-yellow); border-bottom: 4px solid var(--high-contrast-border-yellow);}
 
+        /* 上方目標區域 */
         #top-section {
             width: 100%;
-            height: 40%; 
-            margin-top: 60px;
+            flex: 1; /* 分配較少空間 */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-bottom: 10px solid; 
+            border-bottom: 15px solid; /* 超粗的視覺分隔線 */
+            padding: 10px;
         }
-        .theme-black #top-section { background-color: var(--bg-top-black); border-bottom-color: var(--border-color-black); }
-        .theme-white #top-section { background-color: var(--bg-top-white); border-bottom-color: var(--border-color-white); }
-        .theme-yellow #top-section { background-color: var(--bg-top-yellow); border-bottom-color: var(--border-color-yellow); }
+        /* 目標區域高對比度邊框顏色 */
+        .theme-black #top-section { background-color: var(--bg-top-black); border-bottom-color: var(--high-contrast-border-black); }
+        .theme-white #top-section { background-color: var(--bg-top-white); border-bottom-color: var(--high-contrast-border-white); }
+        .theme-yellow #top-section { background-color: var(--bg-top-yellow); border-bottom-color: var(--high-contrast-border-yellow); }
 
+        /* 目標圖片樣式 */
         #target-image {
             width: auto;
-            height: 100%;
-            max-height: 25vh; 
-            border: 8px dashed #888; 
+            height: auto;
+            max-height: 20vh; /* 縮小目標圖片高度 */
+            border: 10px solid; /* 超粗高對比度邊框 */
             border-radius: 20px;
             padding: 10px;
-            background-color: #fff;
-            transition: all 0.3s ease; /* 讓邊框顏色變化更平滑 */
+            background-color: #fff; /* 確保透明 JPG 顯示正常 */
+            transition: all 0.3s ease; 
         }
+        /* 目標圖片高對比度邊框顏色 */
+        .theme-black #target-image { border-color: var(--high-contrast-border-black); }
+        .theme-white #target-image { border-color: var(--high-contrast-border-white); }
+        .theme-yellow #target-image { border-color: var(--high-contrast-border-yellow); }
 
         /* --- 答對時的發光放大動畫 --- */
         .glow-effect {
             animation: success-glow 0.6s ease-in-out infinite alternate;
-            border-color: #00ff00 !important; /* 邊框變亮綠色 */
             z-index: 1000;
+            /* 答對時邊框變綠色，不使用主題顏色，強調答對 */
+            border-color: #00ff00 !important; 
         }
 
         @keyframes success-glow {
             from {
-                box-shadow: 0 0 10px #00ff00;
+                box-shadow: 0 0 15px #00ff00;
                 transform: scale(1);
             }
             to {
-                box-shadow: 0 0 40px #00ff00, 0 0 80px #00ff00;
-                transform: scale(1.2); /* 動態放大 20% */
+                box-shadow: 0 0 50px #00ff00, 0 0 100px #00ff00;
+                transform: scale(1.1); /* 稍微放大 */
             }
         }
 
+        /* 下方選項區域 */
         #bottom-section {
             width: 100%;
-            height: 60%; 
+            flex: 1.5; /* 分配大於上半部的空間，約佔全畫面 60% 高度 */
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px; 
         }
 
+        /* 統一橫向排列設計 */
         #options-area {
-            width: 95%;
-            max-width: 900px;
+            width: 100%;
+            max-width: 1300px; /* 稍微放大最大寬度以容納間距 */
             height: 100%;
-            display: grid;
-            gap: 20px;
-            align-content: center;
+            display: flex;
+            flex-direction: row; 
+            justify-content: space-evenly; 
+            align-items: center;
+            /* 【修改重點】顯著加大圖片之間的間距，防止貼在一起 */
+            gap: 50px; 
         }
-        
-        #options-area.grid-mode-2 { grid-template-columns: repeat(2, 1fr); }
-        #options-area.grid-mode-3 { grid-template-columns: repeat(3, 1fr); }
-        #options-area.grid-mode-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
 
+        /* 選項按鈕樣式 */
         .option-btn {
-            border: 5px solid;
-            border-radius: 20px;
-            padding: 15px;
-            cursor: grab;
+            flex: 1 1 0; 
+            height: 90%; /* 按鈕高度佔滿區域的 90% */
             display: flex;
             justify-content: center;
             align-items: center;
             touch-action: none; 
             position: relative;
             background-color: transparent;
+            
+            border: none;
+            cursor: grab;
+            
+            /* 【修改重點】按鈕本身加入左右 Padding，確保圖片邊框絕對不會互相接觸 */
+            padding: 0 15px; 
         }
         .option-btn:active { cursor: grabbing; }
 
-        .theme-black .option-btn { background-color: var(--btn-color-black); border-color: var(--border-color-black); }
-        .theme-white .option-btn { background-color: var(--btn-color-white); border-color: var(--border-color-white); }
-        .theme-yellow .option-btn { background-color: var(--btn-color-yellow); border-color: var(--border-color-yellow); }
-
+        /* 選項圖片樣式 - 圖片巨大化與高對比邊框 */
         .option-img {
+            /* 調整寬度計算，減去 Padding 的影響 */
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            /* 將圖片最大高度設為 35dvh，確保非常巨大 */
+            max-height: 35dvh; 
+            object-fit: contain; /* 確保圖片不變形 */
             background-color: #fff;
-            border-radius: 10px;
+            border-radius: 20px;
             pointer-events: none; 
+            
+            /* 超粗高對比度顏色邊框 (不變) */
+            border: 10px solid; 
+            padding: 10px;
         }
-
-        .grid-mode-2 .option-img { max-height: 40vh; } 
-        .grid-mode-3 .option-img { max-height: 30vh; }
-        .grid-mode-4 .option-img { max-height: 22vh; }
         
+        /* 選項圖片高對比度邊框顏色應用 */
+        .theme-black .option-img { border-color: var(--high-contrast-border-black); }
+        .theme-white .option-img { border-color: var(--high-contrast-border-white); }
+        .theme-yellow .option-img { border-color: var(--high-contrast-border-yellow); }
+
         #replay-audio-btn {
-            margin-top: 10px;
+            margin-top: 5px;
             padding: 5px 15px;
             font-size: 1.2rem;
             border-radius: 10px;
@@ -186,7 +210,6 @@
     </style>
 </head>
 <body class="theme-black">
-
     <div id="start-overlay" onclick="startGame()">
         點擊畫面開始遊戲
     </div>
@@ -217,14 +240,16 @@
     </div>
 
     <div id="bottom-section">
-        <div id="options-area" class="grid-mode-4">
+        <div id="options-area">
         </div>
     </div>
 
     <script>
-        const images = ['image_0.JPG', 'image_1.JPG', 'image_2.JPG', 'image_3.JPG'];
+        // --- 遊戲資料 (不變) ---
+        const images = ['image_0.jpg', 'image_1.JPG', 'image_2.JPG', 'image_3.JPG'];
         const itemNames = ['足球', '蘋果', '香蕉', '杯子'];
 
+        // 獲取 HTML 元素
         const body = document.body;
         const bgColorSelect = document.getElementById('bgColorSelect');
         const modeSelect = document.getElementById('modeSelect');
@@ -232,16 +257,17 @@
         const optionsArea = document.getElementById('options-area');
         const startOverlay = document.getElementById('start-overlay');
 
+        // 遊戲狀態變數
         let targetIndex = 0;
         let currentGameMode = parseInt(modeSelect.value);
         let isProcessing = false; 
 
-        // --- 聲音與語音 ---
+        // --- 聲音與語音 (不變) ---
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx;
         let synth = window.speechSynthesis;
         
-        // 建立拍手聲物件 (需要下載音效檔)
+        // 建立拍手聲物件 (需要下載 clap.mp3)
         const clapSound = new Audio('clap.mp3');
 
         function startGame() {
@@ -249,7 +275,6 @@
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
-            // 解鎖語音
             const unlockUtterance = new SpeechSynthesisUtterance('');
             synth.speak(unlockUtterance);
             
@@ -285,21 +310,17 @@
             oscillator.stop(audioCtx.currentTime + duration);
         }
 
-        // --- 升級版的答對回饋 ---
         function playCorrectSound() {
-            // 1. 播放拍手聲
             clapSound.currentTime = 0;
             const playPromise = clapSound.play();
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    // 【備用機制】如果資料夾裡沒有 clap.mp3，則播放「登登登」升階音效代替
                     playBeep(523.25, 0.15, 'sine'); 
                     setTimeout(() => playBeep(659.25, 0.15, 'sine'), 150); 
                     setTimeout(() => playBeep(783.99, 0.4, 'sine'), 300); 
                 });
             }
             
-            // 2. 加入語音稱讚
             const cheerUtterance = new SpeechSynthesisUtterance("好叻呀！");
             cheerUtterance.lang = 'zh-HK';
             cheerUtterance.rate = 1.1;
@@ -310,7 +331,7 @@
             playBeep(250, 0.4, 'triangle'); 
         }
 
-        // --- 拖拉互動邏輯 ---
+        // --- 拖拉互動邏輯 (不變) ---
         let draggedElement = null;
         let startX = 0, startY = 0;
 
@@ -369,36 +390,41 @@
             isProcessing = true; 
             const clickedIdx = parseInt(element.dataset.index);
 
+            // 獲取按鈕內的圖片元素
+            const optionImg = element.querySelector('.option-img');
+
             if (clickedIdx === targetIndex) {
-                // 【答對了：啟動強烈回饋】
                 playCorrectSound();
                 
-                // 暫時隱藏拖拉的選項，讓視覺完全集中在上方
-                element.style.display = 'none'; 
+                // 選項圖片加入答對發光特效，並縮放
+                optionImg.classList.add('glow-effect');
+                // 將選項移到目標區域上方
+                element.style.zIndex = 1000;
+                element.style.transition = 'all 0.5s ease-out';
+                element.style.transform = `translate(0px, -50vh) scale(1.1)`; // 往上移動並放大
+
+                targetImage.classList.add('glow-effect'); // 目標區也發光
                 
-                // 為目標圖片加上發光與放大的特效 Class
-                targetImage.classList.add('glow-effect');
-                
-                // 等待 2.5 秒，讓學童聽完拍手聲與稱讚後，再進入下一關
                 setTimeout(() => {
-                    targetImage.classList.remove('glow-effect'); // 移除特效
+                    optionImg.classList.remove('glow-effect'); // 移除特效
+                    targetImage.classList.remove('glow-effect'); 
                     nextLevel(); 
                 }, 2500); 
             } else {
-                // 【答錯了】
                 playWrongSound();
-                element.style.borderColor = '#ff0000'; 
+                // 錯了，邊框變紅色 (針對圖片元素修改)
+                optionImg.style.borderColor = '#ff0000'; 
                 snapBack(element); 
                 
                 setTimeout(() => {
-                    element.style.borderColor = ''; 
+                    optionImg.style.borderColor = ''; // 恢復主題邊框顏色
                     draggedElement = null;
                     isProcessing = false; 
                 }, 500);
             }
         }
 
-        // --- 遊戲流程 ---
+        // --- 遊戲流程 (不變) ---
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -408,8 +434,7 @@
 
         function displayOptions(targetIdx, numberOfOptions) {
             optionsArea.innerHTML = ''; 
-            optionsArea.className = `grid-mode-${numberOfOptions}`; 
-
+            
             const options = [targetIdx];
             let availableWrongIndices = images.map((_, index) => index).filter(index => index !== targetIdx);
             
