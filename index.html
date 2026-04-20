@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+    <title>視障兒童配對遊戲</title>
+    <style>
+        /* 基本重置 */
+        body, h1, p, select, option, button {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: sans-serif;
+            font-size: 1.5rem;
+        }
+
+        /* 主題顏色變數 */
+        :root {
+            --bg-top-black: #111111;
+            --bg-bottom-black: #000000;
+            --text-color-black: #ffffff;
+            --border-color-black: #555555;
+            --btn-color-black: #222222;
+
+            --bg-top-white: #f5f5f5;
+            --bg-bottom-white: #ffffff;
+            --text-color-white: #000000;
+            --border-color-white: #cccccc;
+            --btn-color-white: #eeeeee;
+
+            --bg-top-yellow: #e6e600;
+            --bg-bottom-yellow: #ffff00;
+            --text-color-yellow: #000000;
+            --border-color-yellow: #aaaa00;
+            --btn-color-yellow: #f0f000;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            touch-action: none; 
+            -webkit-user-select: none; 
+            user-select: none;
+            -webkit-touch-callout: none; 
+            overscroll-behavior: none; 
+        }
+
+        body.theme-black { background-color: var(--bg-bottom-black); color: var(--text-color-black); }
+        body.theme-white { background-color: var(--bg-bottom-white); color: var(--text-color-white); }
+        body.theme-yellow { background-color: var(--bg-bottom-yellow); color: var(--text-color-yellow); }
+
+        #start-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .settings {
+            width: 100%;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            position: absolute;
+            top: 0;
+            z-index: 10;
+        }
+        .theme-black .settings { background-color: var(--bg-top-black); border-bottom: 2px solid var(--border-color-black);}
+        .theme-white .settings { background-color: var(--bg-top-white); border-bottom: 2px solid var(--border-color-white);}
+        .theme-yellow .settings { background-color: var(--bg-top-yellow); border-bottom: 2px solid var(--border-color-yellow);}
+
+        #top-section {
+            width: 100%;
+            height: 40%; 
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 10px solid; 
+        }
+        .theme-black #top-section { background-color: var(--bg-top-black); border-bottom-color: var(--border-color-black); }
+        .theme-white #top-section { background-color: var(--bg-top-white); border-bottom-color: var(--border-color-white); }
+        .theme-yellow #top-section { background-color: var(--bg-top-yellow); border-bottom-color: var(--border-color-yellow); }
+
+        #target-image {
+            width: auto;
+            height: 100%;
+            max-height: 25vh; 
+            border: 8px dashed #888; 
+            border-radius: 20px;
+            padding: 10px;
+            background-color: #fff;
+            transition: all 0.3s ease; /* 讓邊框顏色變化更平滑 */
+        }
+
+        /* --- 答對時的發光放大動畫 --- */
+        .glow-effect {
+            animation: success-glow 0.6s ease-in-out infinite alternate;
+            border-color: #00ff00 !important; /* 邊框變亮綠色 */
+            z-index: 1000;
+        }
+
+        @keyframes success-glow {
+            from {
+                box-shadow: 0 0 10px #00ff00;
+                transform: scale(1);
+            }
+            to {
+                box-shadow: 0 0 40px #00ff00, 0 0 80px #00ff00;
+                transform: scale(1.2); /* 動態放大 20% */
+            }
+        }
+
+        #bottom-section {
+            width: 100%;
+            height: 60%; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #options-area {
+            width: 95%;
+            max-width: 900px;
+            height: 100%;
+            display: grid;
+            gap: 20px;
+            align-content: center;
+        }
+        
+        #options-area.grid-mode-2 { grid-template-columns: repeat(2, 1fr); }
+        #options-area.grid-mode-3 { grid-template-columns: repeat(3, 1fr); }
+        #options-area.grid-mode-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+
+        .option-btn {
+            border: 5px solid;
+            border-radius: 20px;
+            padding: 15px;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none; 
+            position: relative;
+            background-color: transparent;
+        }
+        .option-btn:active { cursor: grabbing; }
+
+        .theme-black .option-btn { background-color: var(--btn-color-black); border-color: var(--border-color-black); }
+        .theme-white .option-btn { background-color: var(--btn-color-white); border-color: var(--border-color-white); }
+        .theme-yellow .option-btn { background-color: var(--btn-color-yellow); border-color: var(--border-color-yellow); }
+
+        .option-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background-color: #fff;
+            border-radius: 10px;
+            pointer-events: none; 
+        }
+
+        .grid-mode-2 .option-img { max-height: 40vh; } 
+        .grid-mode-3 .option-img { max-height: 30vh; }
+        .grid-mode-4 .option-img { max-height: 22vh; }
+        
+        #replay-audio-btn {
+            margin-top: 10px;
+            padding: 5px 15px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="theme-black">
+
+    <div id="start-overlay" onclick="startGame()">
+        點擊畫面開始遊戲
+    </div>
+    
+    <div class="settings">
+        <div>
+            <label for="bgColorSelect">背景顏色：</label>
+            <select id="bgColorSelect">
+                <option value="theme-black" selected>黑色</option>
+                <option value="theme-white">白色</option>
+                <option value="theme-yellow">黃色</option>
+            </select>
+        </div>
+        <div>
+            <label for="modeSelect">模式：</label>
+            <select id="modeSelect">
+                <option value="2">2 選 1</option>
+                <option value="3">3 選 1</option>
+                <option value="4" selected>4 選 1</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="top-section">
+        <p>請將一樣的物品拖拉到這裡：</p>
+        <img id="target-image" src="" alt="目標物品">
+        <button id="replay-audio-btn" onclick="playQuestionAudio()">🔊 再聽一次題目</button>
+    </div>
+
+    <div id="bottom-section">
+        <div id="options-area" class="grid-mode-4">
+        </div>
+    </div>
+
+    <script>
+        const images = ['image_0.JPG', 'image_1.JPG', 'image_2.JPG', 'image_3.JPG'];
+        const itemNames = ['足球', '蘋果', '香蕉', '杯子'];
+
+        const body = document.body;
+        const bgColorSelect = document.getElementById('bgColorSelect');
+        const modeSelect = document.getElementById('modeSelect');
+        const targetImage = document.getElementById('target-image');
+        const optionsArea = document.getElementById('options-area');
+        const startOverlay = document.getElementById('start-overlay');
+
+        let targetIndex = 0;
+        let currentGameMode = parseInt(modeSelect.value);
+        let isProcessing = false; 
+
+        // --- 聲音與語音 ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+        let synth = window.speechSynthesis;
+        
+        // 建立拍手聲物件 (需要下載音效檔)
+        const clapSound = new Audio('clap.mp3');
+
+        function startGame() {
+            startOverlay.style.display = 'none';
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // 解鎖語音
+            const unlockUtterance = new SpeechSynthesisUtterance('');
+            synth.speak(unlockUtterance);
+            
+            // 解鎖 iOS 上的音效播放權限
+            clapSound.play().then(() => {
+                clapSound.pause();
+                clapSound.currentTime = 0;
+            }).catch(() => {});
+
+            nextLevel();
+        }
+
+        function playQuestionAudio() {
+            if (synth.speaking) synth.cancel(); 
+            const textToSpeak = `請選出「${itemNames[targetIndex]}」`;
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.lang = 'zh-HK'; 
+            utterance.rate = 0.9; 
+            synth.speak(utterance);
+        }
+
+        function playBeep(frequency, duration, type = 'sine') {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = type; 
+            oscillator.frequency.value = frequency; 
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // --- 升級版的答對回饋 ---
+        function playCorrectSound() {
+            // 1. 播放拍手聲
+            clapSound.currentTime = 0;
+            const playPromise = clapSound.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // 【備用機制】如果資料夾裡沒有 clap.mp3，則播放「登登登」升階音效代替
+                    playBeep(523.25, 0.15, 'sine'); 
+                    setTimeout(() => playBeep(659.25, 0.15, 'sine'), 150); 
+                    setTimeout(() => playBeep(783.99, 0.4, 'sine'), 300); 
+                });
+            }
+            
+            // 2. 加入語音稱讚
+            const cheerUtterance = new SpeechSynthesisUtterance("好叻呀！");
+            cheerUtterance.lang = 'zh-HK';
+            cheerUtterance.rate = 1.1;
+            synth.speak(cheerUtterance);
+        }
+
+        function playWrongSound() {
+            playBeep(250, 0.4, 'triangle'); 
+        }
+
+        // --- 拖拉互動邏輯 ---
+        let draggedElement = null;
+        let startX = 0, startY = 0;
+
+        function handlePointerDown(e) {
+            if (isProcessing) return; 
+
+            draggedElement = e.currentTarget;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            draggedElement.style.zIndex = 1000;
+            draggedElement.style.transition = ''; 
+            draggedElement.setPointerCapture(e.pointerId);
+
+            draggedElement.onpointermove = handlePointerMove;
+            draggedElement.onpointerup = handlePointerUp;
+            draggedElement.onpointercancel = handlePointerUp;
+        }
+
+        function handlePointerMove(e) {
+            if (!draggedElement) return;
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            draggedElement.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        }
+
+        function handlePointerUp(e) {
+            if (!draggedElement) return;
+            
+            draggedElement.releasePointerCapture(e.pointerId);
+            draggedElement.onpointermove = null;
+            draggedElement.onpointerup = null;
+            draggedElement.onpointercancel = null;
+
+            draggedElement.style.visibility = 'hidden';
+            const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+            draggedElement.style.visibility = 'visible';
+
+            const dropZone = document.getElementById('target-image');
+            
+            if (elemBelow === dropZone || (elemBelow && elemBelow.closest('#top-section'))) {
+                checkAnswer(draggedElement);
+            } else {
+                snapBack(draggedElement);
+                draggedElement = null; 
+            }
+        }
+
+        function snapBack(element) {
+            element.style.transition = 'transform 0.3s ease-out';
+            element.style.transform = 'translate(0px, 0px)';
+            element.style.zIndex = '';
+        }
+
+        function checkAnswer(element) {
+            isProcessing = true; 
+            const clickedIdx = parseInt(element.dataset.index);
+
+            if (clickedIdx === targetIndex) {
+                // 【答對了：啟動強烈回饋】
+                playCorrectSound();
+                
+                // 暫時隱藏拖拉的選項，讓視覺完全集中在上方
+                element.style.display = 'none'; 
+                
+                // 為目標圖片加上發光與放大的特效 Class
+                targetImage.classList.add('glow-effect');
+                
+                // 等待 2.5 秒，讓學童聽完拍手聲與稱讚後，再進入下一關
+                setTimeout(() => {
+                    targetImage.classList.remove('glow-effect'); // 移除特效
+                    nextLevel(); 
+                }, 2500); 
+            } else {
+                // 【答錯了】
+                playWrongSound();
+                element.style.borderColor = '#ff0000'; 
+                snapBack(element); 
+                
+                setTimeout(() => {
+                    element.style.borderColor = ''; 
+                    draggedElement = null;
+                    isProcessing = false; 
+                }, 500);
+            }
+        }
+
+        // --- 遊戲流程 ---
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function displayOptions(targetIdx, numberOfOptions) {
+            optionsArea.innerHTML = ''; 
+            optionsArea.className = `grid-mode-${numberOfOptions}`; 
+
+            const options = [targetIdx];
+            let availableWrongIndices = images.map((_, index) => index).filter(index => index !== targetIdx);
+            
+            let wrongOptionsToAdd = numberOfOptions - 1;
+            for (let i = 0; i < wrongOptionsToAdd; i++) {
+                if (availableWrongIndices.length === 0) break;
+                const randomIndex = Math.floor(Math.random() * availableWrongIndices.length);
+                options.push(availableWrongIndices.splice(randomIndex, 1)[0]);
+            }
+
+            shuffle(options);
+
+            options.forEach(idx => {
+                const button = document.createElement('div'); 
+                button.className = 'option-btn';
+                button.dataset.index = idx;
+                button.onpointerdown = handlePointerDown;
+
+                const img = document.createElement('img');
+                img.src = images[idx];
+                img.className = 'option-img';
+                
+                button.appendChild(img);
+                optionsArea.appendChild(button);
+            });
+        }
+
+        function nextLevel() {
+            targetIndex = Math.floor(Math.random() * images.length);
+            targetImage.src = images[targetIndex];
+            
+            displayOptions(targetIndex, currentGameMode);
+            
+            isProcessing = false; 
+            
+            setTimeout(playQuestionAudio, 500);
+        }
+
+        // --- 設定選單 ---
+        bgColorSelect.onchange = (event) => {
+            body.className = event.target.value; 
+        };
+
+        modeSelect.onchange = (event) => {
+            currentGameMode = parseInt(event.target.value);
+            nextLevel(); 
+        };
+    </script>
+</body>
+</html>
